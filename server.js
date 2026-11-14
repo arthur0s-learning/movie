@@ -1,6 +1,7 @@
 const http = require("node:http");
 const { readFile } = require("node:fs/promises");
 const path = require("node:path");
+const { findSearch, saveSearch } = require("./db");
 
 const files = {
   "/": { name: "index.html", type: "text/html; charset=utf-8" },
@@ -39,6 +40,20 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
+    try {
+      const cachedResult = await findSearch(title);
+      if (cachedResult) {
+        response.writeHead(200, apiHeaders);
+        response.end(JSON.stringify(cachedResult));
+        return;
+      }
+    } catch (error) {
+      console.error("Impossible de lire la base de recherches:", error);
+      response.writeHead(500, apiHeaders);
+      response.end(JSON.stringify({ Error: "Impossible de lire la base de recherches." }));
+      return;
+    }
+
     const apiKey = process.env.OMDB_API_KEY;
     if (!apiKey) {
       response.writeHead(500, apiHeaders);
@@ -52,6 +67,15 @@ const server = http.createServer(async (request, response) => {
       apiUrl.searchParams.set("s", title);
       const apiResponse = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
       const data = await apiResponse.json();
+
+      try {
+        await saveSearch(title, data);
+      } catch (error) {
+        console.error("Impossible d'enregistrer le résultat OMDb:", error);
+        response.writeHead(500, apiHeaders);
+        response.end(JSON.stringify({ Error: "Impossible d'enregistrer le résultat de la recherche." }));
+        return;
+      }
 
       response.writeHead(200, apiHeaders);
       response.end(JSON.stringify(data));
