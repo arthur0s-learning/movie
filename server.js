@@ -1,7 +1,12 @@
 const http = require("node:http");
 const { readFile } = require("node:fs/promises");
 const path = require("node:path");
-const { findSearch, saveSearch } = require("./db");
+const {
+  findMovieDetails,
+  findSearch,
+  saveMovieDetails,
+  saveSearch,
+} = require("./db");
 
 const files = {
   "/": { name: "index.html", type: "text/html; charset=utf-8" },
@@ -9,6 +14,74 @@ const files = {
   "/style.css": { name: "style.css", type: "text/css; charset=utf-8" },
   "/script.js": { name: "script.js", type: "text/javascript; charset=utf-8" },
 };
+
+async function requestOmdb(parameters, apiKey) {
+  const apiUrl = new URL("https://www.omdbapi.com/");
+  apiUrl.searchParams.set("apikey", apiKey);
+  for (const [key, value] of Object.entries(parameters)) {
+    apiUrl.searchParams.set(key, value);
+  }
+
+  const apiResponse = await fetch(apiUrl, {
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!apiResponse.ok) {
+    throw new Error(`OMDb a répondu avec le statut ${apiResponse.status}.`);
+  }
+  return apiResponse.json();
+}
+
+async function enrichSearchResults(data, apiKey) {
+  if (!Array.isArray(data.Search)) return data;
+
+  const results = [];
+  for (let index = 0; index < data.Search.length; index += 5) {
+    const batch = data.Search.slice(index, index + 5);
+    const enrichedBatch = await Promise.all(
+      batch.map(async (summary) => {
+        if (summary.Plot && summary.Plot !== "N/A") return summary;
+
+        const cachedDetails = await findMovieDetails(summary.imdbID);
+        if (cachedDetails) return cachedDetails;
+
+        if (!apiKey) {
+          return {
+            ...summary,
+            DetailsError: "La clé OMDb n'est pas configurée pour charger les détails.",
+          };
+        }
+
+        try {
+          const details = await requestOmdb(
+            { i: summary.imdbID, plot: "full" },
+            apiKey,
+          );
+          if (details.Response === "False") {
+            console.error(
+              `OMDb n'a pas fourni les détails de ${summary.imdbID}: ${details.Error}`,
+            );
+            return { ...summary, DetailsError: details.Error };
+          }
+
+          await saveMovieDetails(details);
+          return details;
+        } catch (error) {
+          console.error(
+            `Impossible de charger les détails de ${summary.imdbID}:`,
+            error,
+          );
+          return {
+            ...summary,
+            DetailsError: "Les détails complets sont momentanément indisponibles.",
+          };
+        }
+      }),
+    );
+    results.push(...enrichedBatch);
+  }
+
+  return { ...data, Search: results };
+}
 
 const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url, "http://localhost");
@@ -40,49 +113,41 @@ const server = http.createServer(async (request, response) => {
       return;
     }
 
-    try {
-      const cachedResult = await findSearch(title);
-      if (cachedResult) {
-        response.writeHead(200, apiHeaders);
-        response.end(JSON.stringify(cachedResult));
-        return;
-      }
-    } catch (error) {
-      console.error("Impossible de lire la base de recherches:", error);
-      response.writeHead(500, apiHeaders);
-      response.end(JSON.stringify({ Error: "Impossible de lire la base de recherches." }));
+    const page = Number(requestUrl.searchParams.get("page") || 1);
+    if (!Number.isInteger(page) || page < 1 || page > 10) {
+      response.writeHead(400, apiHeaders);
+      response.end(JSON.stringify({ Error: "La page doit être un nombre entier entre 1 et 10." }));
       return;
     }
 
     const apiKey = process.env.OMDB_API_KEY;
-    if (!apiKey) {
-      response.writeHead(500, apiHeaders);
-      response.end(JSON.stringify({ Error: "La clé OMDb (OMDB_API_KEY) n'est pas configurée." }));
-      return;
-    }
-
     try {
-      const apiUrl = new URL("https://www.omdbapi.com/");
-      apiUrl.searchParams.set("apikey", apiKey);
-      apiUrl.searchParams.set("s", title);
-      const apiResponse = await fetch(apiUrl, { signal: AbortSignal.timeout(10000) });
-      const data = await apiResponse.json();
+      let data = await findSearch(title, page);
+      const cachedSearch = Boolean(data);
+      if (!cachedSearch) {
+        if (!apiKey) {
+          response.writeHead(500, apiHeaders);
+          response.end(
+            JSON.stringify({
+              Error: "La clé OMDb (OMDB_API_KEY) n'est pas configurée.",
+            }),
+          );
+          return;
+        }
+        data = await requestOmdb({ s: title, page: String(page) }, apiKey);
+      }
 
-      try {
-        await saveSearch(title, data);
-      } catch (error) {
-        console.error("Impossible d'enregistrer le résultat OMDb:", error);
-        response.writeHead(500, apiHeaders);
-        response.end(JSON.stringify({ Error: "Impossible d'enregistrer le résultat de la recherche." }));
-        return;
+      data = await enrichSearchResults(data, apiKey);
+      if (!cachedSearch && data.Search?.length) {
+        await saveSearch(title, data, page);
       }
 
       response.writeHead(200, apiHeaders);
       response.end(JSON.stringify(data));
     } catch (error) {
-      console.error("La requête OMDb a échoué:", error);
+      console.error("Impossible de compléter la recherche:", error);
       response.writeHead(502, apiHeaders);
-      response.end(JSON.stringify({ Error: "Impossible de joindre OMDb pour le moment." }));
+      response.end(JSON.stringify({ Error: "Impossible de compléter la recherche." }));
     }
     return;
   }

@@ -1016,3 +1016,375 @@ h1 > span {
     transition-duration: 0.01ms !important;
   }
 }
+
+.filters-panel {
+  margin-bottom: 24px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 3%);
+}
+
+.filters-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.filters-title h3 {
+  margin: 0;
+  color: #eee9e6;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.filters-title > span {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.filter-control {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+}
+
+.filter-label {
+  overflow: hidden;
+  color: #a7a4ae;
+  font-size: 0.67rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-control input,
+.filter-control select {
+  width: 100%;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 7px;
+  background: #11131c;
+  color: #e8e4e6;
+  font-size: 0.73rem;
+}
+
+.filter-control input::placeholder {
+  color: #65636e;
+}
+
+.reset-filters {
+  margin-top: 13px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.reset-filters:hover {
+  color: #ffd1a5;
+  text-decoration: underline;
+}
+
+.movie-list {
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.movie-card {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 20px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(110deg, rgb(255 255 255 / 4%), rgb(255 255 255 / 1%));
+  transition:
+    border-color 220ms ease,
+    background 220ms ease,
+    transform 220ms ease;
+}
+
+.movie-card:hover {
+  transform: translateY(-2px);
+  border-color: rgb(255 179 107 / 30%);
+  background: linear-gradient(110deg, rgb(255 255 255 / 6%), rgb(255 255 255 / 2%));
+}
+
+.movie-poster {
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 2 / 3;
+}
+
+.movie-poster img {
+  min-height: 0;
+}
+
+.movie-details {
+  min-width: 0;
+  padding: 2px 0;
+}
+
+.movie-topline,
+.movie-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.movie-type {
+  color: #aaa6b0;
+  font-size: 0.69rem;
+  text-transform: capitalize;
+}
+
+.movie-rated {
+  padding: 3px 7px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 4px;
+  color: #c9c4cb;
+  font-size: 0.62rem;
+}
+
+.movie-heading {
+  align-items: flex-start;
+  margin-top: 7px;
+}
+
+.movie-title {
+  margin: 0;
+  color: #f4eff0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.movie-rating {
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.movie-rating small {
+  color: #8f8c97;
+  font-size: 0.62rem;
+  font-weight: 400;
+}
+
+.movie-plot {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 9px 0 10px;
+  color: #aaa7b0;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+}
+
+.movie-genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.genre-tag {
+  padding: 4px 8px;
+  border: 1px solid rgb(255 179 107 / 16%);
+  border-radius: 999px;
+  background: rgb(255 179 107 / 5%);
+  color: #e6b889;
+  font-size: 0.61rem;
+}
+
+.movie-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.movie-fact {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.movie-fact-label {
+  color: #777580;
+  font-size: 0.59rem;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.movie-fact-value {
+  overflow: hidden;
+  color: #c9c5cc;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+}
+
+.imdb-link {
+  display: inline-block;
+  margin-top: 11px;
+  color: var(--accent);
+  font-size: 0.69rem;
+  text-decoration: none;
+}
+
+.imdb-link:hover {
+  text-decoration: underline;
+}
+
+.details-error {
+  margin: 8px 0 0;
+  color: #d3a08d;
+  font-size: 0.68rem;
+}
+
+.results-message {
+  grid-column: 1 / -1;
+  padding: 22px 4px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pagination-button,
+.pagination-page {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 3%);
+  color: #c9c5cc;
+  cursor: pointer;
+  font-size: 0.72rem;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease;
+}
+
+.pagination-button:hover:not(:disabled),
+.pagination-page:hover {
+  border-color: rgb(255 179 107 / 45%);
+  color: var(--accent);
+}
+
+.pagination-page--active,
+.pagination-page--active:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #1d1510;
+  font-weight: 700;
+}
+
+.pagination-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+@media (width <= 900px) {
+  .filters-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (width <= 640px) {
+  .filters-panel {
+    padding: 13px;
+  }
+
+  .filters-title {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .filters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .movie-card {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 12px;
+    padding: 10px;
+  }
+
+  .movie-heading {
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .movie-title {
+    font-size: 1rem;
+  }
+
+  .movie-plot {
+    font-size: 0.7rem;
+    -webkit-line-clamp: 3;
+  }
+
+  .movie-facts {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  .results-count {
+    text-align: right;
+  }
+
+  .pagination {
+    gap: 7px;
+  }
+
+  .pagination-button {
+    padding: 0 8px;
+    font-size: 0.65rem;
+  }
+
+  .pagination-pages {
+    gap: 4px;
+  }
+
+  .pagination-page {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+  }
+}
